@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>사상 미식회</title>
+    <style>
+        :root {
+            /* Black & Gold Theme */
+            --bg-color: #121212;
+            --card-bg: #1E1E1E;
+            --primary: #D4AF37; /* Luxury Gold */
+            --primary-light: #F4D03F;
+            --text-main: #FFFFFF;
+            --text-sub: #B0B0B0;
+            --border-color: #333333;
+            --accent-bg: #2C2C2C;
+            --map-btn: #03C75A;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* 헤더 */
+        header {
+            background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+            padding: 25px 20px 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+        p.subtitle { 
+            margin: 5px 0 20px; 
+            font-size: 0.9rem; 
+            color: var(--text-sub); 
+            font-weight: 300;
+        }
+
+        /* 탭 네비게이션 */
+        .tabs {
+            display: flex;
+            padding: 0;
+            overflow-x: auto;
+            gap: 8px;
+            scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--accent-bg);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-sub);
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: #000;
+            font-weight: 700;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* 컨텐츠 영역 */
+        .content {
+            padding: 25px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+
+        /* 리스트 카드 스타일 */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 18px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .card:active { transform: scale(0.98); background: #252525; }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .shop-name { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            color: var(--primary); 
+        }
+        .tag {
+            font-size: 0.8rem;
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--primary-light);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        .card-desc { 
+            font-size: 0.95rem; 
+            color: var(--text-sub); 
+            margin: 0; 
+            line-height: 1.5; 
+        }
+        .click-hint {
+            font-size: 0.8rem; 
+            color: #555; 
+            margin-top: 15px; 
+            font-weight: 400;
+            text-align: right; 
+            display: block;
+        }
+
+        /* 모달 (팝업) 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
+
+        .modal-content {
+            background: #222;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .modal-title { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            margin-bottom: 5px; 
+            color: var(--primary); 
+        }
+        .modal-tag { color: var(--text-sub); font-size: 0.9rem; margin-bottom: 25px; display: block;}
+        
+        .menu-section { 
+            background: #151515; 
+            border: 1px solid #333;
+            border-radius: 10px; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+        }
+        .menu-label { 
+            font-size: 0.85rem; 
+            color: var(--primary); 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+            letter-spacing: 0;
+        }
+        .menu-item { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 12px; 
+            border-bottom: 1px solid #2a2a2a; 
+            padding-bottom: 12px; 
+        }
+        .menu-item:last-child { margin-bottom: 0; border: none; padding-bottom: 0; }
+        .m-name { font-weight: 400; color: var(--text-main); }
+        .m-price { color: var(--text-sub); font-weight: 600; font-size: 0.95rem; }
+
+        .map-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background: var(--map-btn);
+            color: white;
+            padding: 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+        .map-btn:hover { opacity: 0.9; }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: none; border: none;
+            font-size: 1.8rem; color: #666;
+            cursor: pointer; padding: 5px;
+            transition: color 0.2s;
+        }
+        .close-btn:hover { color: var(--primary); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>사상 미식회</h1>
+        <p class="subtitle">실패 없는 금요일 밤을 위한 선택 (총 28곳)</p>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="setCategory('meat')">고기/구이</button>
+            <button class="tab-btn" onclick="setCategory('fish')">회/이자카야</button>
+            <button class="tab-btn" onclick="setCategory('rice')">식사/밥집</button>
+            <button class="tab-btn" onclick="setCategory('pub')">술집/펍</button>
+        </div>
+    </header>
+
+    <div class="content" id="list-container">
+        <!-- JS로 카드 생성 -->
+    </div>
+
+    <!-- 모달 -->
+    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModalDirect()">×</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const db = {
+            meat: [
+                {
+                    name: "83해치",
+                    tag: "구워주는 맛집",
+                    desc: "웨이팅 필수. 살얼음 무생채와 터지는 육즙.",
+                    menus: [{n:"생삼겹살(150g)", p:"13,000원"}, {n:"천겹살", p:"14,000원"}, {n:"83볶음밥", p:"3,000원"}]
+                },
+                {
+                    name: "산수갑산",
+                    tag: "40년 전통 노포",
+                    desc: "사상 토박이들이 인정하는 숯불 돼지갈비의 정석.",
+                    menus: [{n:"돼지갈비(200g)", p:"11,000원"}, {n:"갈비탕", p:"13,000원"}, {n:"생삽겹살", p:"11,000원"}]
+                },
+                {
+                    name: "사상꼬리집",
+                    tag: "영화 촬영지",
+                    desc: "Since 1980. 특수부위 꼬리살의 쫀득한 식감.",
+                    menus: [{n:"꼬리모듬(대)", p:"26,000원"}, {n:"생삼겹살", p:"11,000원"}, {n:"껍데기", p:"7,000원"}]
+                },
+                {
+                    name: "성원정양대창",
+                    tag: "양대창 명가",
+                    desc: "퀄리티 높은 양대창과 전골, 분위기도 훌륭함.",
+                    menus: [{n:"대창구이(180g)", p:"14,500원"}, {n:"특양구이", p:"18,000원"}, {n:"곱창전골", p:"28,000원"}]
+                },
+                {
+                    name: "학장도가",
+                    tag: "프라이빗 룸",
+                    desc: "고급스러운 룸 완비. 구워주는 서비스와 정갈함.",
+                    menus: [{n:"숙성 삼겹살", p:"12,000원"}, {n:"학장 세트", p:"46,000원"}, {n:"된장찌개", p:"5,000원"}]
+                },
+                {
+                    name: "목구멍",
+                    tag: "솥뚜껑 삼겹살",
+                    desc: "솥뚜껑에 구워주는 미박삼겹살과 갓김치의 조화.",
+                    menus: [{n:"미박삼겹살(150g)", p:"13,000원"}, {n:"특목살", p:"13,000원"}, {n:"청도미나리", p:"5,000원"}]
+                },
+                {
+                    name: "꿀돼지문현곱창",
+                    tag: "양념 곱창 노포",
+                    desc: "잡내 없이 초벌된 양념 곱창의 진수.",
+                    menus: [{n:"돼지곱창", p:"10,000원"}, {n:"껍데기", p:"8,000원"}, {n:"전골", p:"25,000원"}]
+                }
+            ],
+            fish: [
+                {
+                    name: "이음",
+                    tag: "감성 이자카야",
+                    desc: "고급 숙성회와 분위기. 데이트 장소 1순위.",
+                    menus: [{n:"제철 사시미(2인)", p:"42,000원"}, {n:"후토마끼", p:"14,000원"}, {n:"전복내장파스타", p:"20,000원"}]
+                },
+                {
+                    name: "도쿄그집",
+                    tag: "사시미 맛집",
+                    desc: "사시미 모리아와세가 유명한 줄 서는 이자카야.",
+                    menus: [{n:"사시미 모리아와세", p:"35,000원"}, {n:"메로구이", p:"25,000원"}, {n:"명란크림파스타", p:"18,000원"}]
+                },
+                {
+                    name: "사상금호",
+                    tag: "프리미엄 참치",
+                    desc: "프라이빗 룸에서 즐기는 고급 참치 코스.",
+                    menus: [{n:"참치회 코스(기본)", p:"35,000원"}, {n:"스페셜 코스", p:"50,000원"}, {n:"실장님 코스", p:"70,000원"}]
+                },
+                {
+                    name: "우라마치 타카바",
+                    tag: "일본 골목 감성",
+                    desc: "일본 느낌 그대로. 2차 꼬치구이 맛집.",
+                    menus: [{n:"꼬치 5종", p:"17,000원"}, {n:"명란구이", p:"10,000원"}, {n:"기린생맥주", p:"8,000원"}]
+                },
+                {
+                    name: "한라횟집",
+                    tag: "로컬 맛집",
+                    desc: "스끼다시의 향연. 회가 두툼하고 신선함.",
+                    menus: [{n:"고급 모듬회(소)", p:"50,000원"}, {n:"향어회", p:"40,000원"}, {n:"매운탕", p:"포함"}]
+                },
+                {
+                    name: "선한술집",
+                    tag: "한우 생고기",
+                    desc: "당일 도축 뭉티기와 육회의 신선함.",
+                    menus: [{n:"한우 뭉티기", p:"38,000원"}, {n:"한우 육회", p:"30,000원"}, {n:"스지오뎅탕", p:"22,000원"}]
+                },
+                {
+                    name: "쿠시야",
+                    tag: "수제 꼬치",
+                    desc: "사상 터줏대감. 숯불 향 가득한 수제 꼬치.",
+                    menus: [{n:"쿠시야 세트", p:"17,000원"}, {n:"나가사키 짬뽕", p:"18,000원"}, {n:"츠쿠네", p:"4,500원"}]
+                }
+            ],
+            rice: [
+                {
+                    name: "합천일류돼지국밥",
+                    tag: "사상 대장",
+                    desc: "마늘 듬뿍 진한 국물. 사상 맛집의 상징.",
+                    menus: [{n:"고기국밥", p:"9,500원"}, {n:"돼지우동", p:"10,000원"}, {n:"수육백반", p:"12,000원"}]
+                },
+                {
+                    name: "최뼈다구해장국",
+                    tag: "압도적인 양",
+                    desc: "고기 양이 어마어마함. 든든한 한 끼의 정석.",
+                    menus: [{n:"해장국", p:"10,000원"}, {n:"감자탕(소)", p:"32,000원"}, {n:"공기밥", p:"무료"}]
+                },
+                {
+                    name: "대궐안집",
+                    tag: "가족 외식",
+                    desc: "점심은 갈비탕, 저녁은 고기. 넓은 주차장.",
+                    menus: [{n:"갈비탕", p:"18,000원"}, {n:"한우 갈비살", p:"37,000원"}, {n:"육회", p:"30,000원"}]
+                },
+                {
+                    name: "밀양순대돼지국밥",
+                    tag: "깔끔한 맛",
+                    desc: "잡내 없이 깔끔한 국물. 남녀노소 호불호 없음.",
+                    menus: [{n:"순대국밥", p:"9,500원"}, {n:"수육백반", p:"12,000원"}, {n:"맛보기순대", p:"10,000원"}]
+                },
+                {
+                    name: "부산에뜬고등어",
+                    tag: "생선구이",
+                    desc: "화덕 생선구이. 부모님 모시고 가기 좋은 곳.",
+                    menus: [{n:"고등어구이", p:"13,000원"}, {n:"제주갈치구이", p:"17,000원"}, {n:"삼치구이", p:"15,000원"}]
+                },
+                {
+                    name: "종가한옥김치찜",
+                    tag: "밥도둑",
+                    desc: "푹 익은 묵은지 김치찜. 밥 두 공기 필수.",
+                    menus: [{n:"김치찜", p:"10,000원"}, {n:"김치찌개", p:"9,000원"}, {n:"계란말이", p:"7,000원"}]
+                },
+                {
+                    name: "사상가야밀면",
+                    tag: "부산 밀면",
+                    desc: "살얼음 육수의 시원한 밀면과 만두 조합.",
+                    menus: [{n:"물밀면", p:"8,000원"}, {n:"비빔밀면", p:"8,500원"}, {n:"만두", p:"5,000원"}]
+                }
+            ],
+            pub: [
+                {
+                    name: "몰틀리",
+                    tag: "다이닝 펍",
+                    desc: "세련된 분위기의 펍. 피자, 파스타와 생맥주.",
+                    menus: [{n:"피자 & 파스타", p:"15,000원~"}, {n:"순살치킨", p:"18,000원"}, {n:"생맥주", p:"4,500원"}]
+                },
+                {
+                    name: "호맥",
+                    tag: "맥주 & 디저트",
+                    desc: "호떡과 흑맥주의 달콤 쌉싸름한 조합.",
+                    menus: [{n:"앙설탕 호떡", p:"13,000원"}, {n:"흑맥주(L)", p:"9,000원"}, {n:"감바스", p:"13,000원"}]
+                },
+                {
+                    name: "구석",
+                    tag: "한식 주점",
+                    desc: "맑은 스지 전골이 일품. 차분한 술자리 추천.",
+                    menus: [{n:"구석 한판", p:"36,000원"}, {n:"LA갈비", p:"28,000원"}, {n:"스팸볼", p:"6,000원"}]
+                },
+                {
+                    name: "가련한 부엌",
+                    tag: "퓨전 요리",
+                    desc: "다양한 퓨전 안주를 합리적인 가격에.",
+                    menus: [{n:"가정식 탕수육", p:"16,000원"}, {n:"해물 볶음면", p:"15,000원"}, {n:"막걸리", p:"4,000원"}]
+                },
+                {
+                    name: "생활맥주",
+                    tag: "수제 맥주",
+                    desc: "갓 튀긴 치킨과 퀄리티 좋은 수제 맥주.",
+                    menus: [{n:"앵그리버드 치킨", p:"19,000원"}, {n:"수제맥주", p:"6,500원"}, {n:"감자튀김", p:"9,000원"}]
+                },
+                {
+                    name: "남촌안주마을",
+                    tag: "막걸리/전",
+                    desc: "육전과 다양한 막걸리 라인업. 비 오는 날 추천.",
+                    menus: [{n:"소고기 육전", p:"25,000원"}, {n:"알탕", p:"22,000원"}, {n:"지평 막걸리", p:"5,000원"}]
+                },
+                {
+                    name: "교작",
+                    tag: "심야 포차",
+                    desc: "새벽까지 달릴 때 좋은 우동 포차.",
+                    menus: [{n:"김치우동 전골", p:"14,000원"}, {n:"탕수육", p:"15,000원"}, {n:"파인애플 샤베트", p:"8,000원"}]
+                }
+            ]
+        };
+
+        let currentCategory = 'meat';
+        renderList();
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderList();
+        }
+
+        function renderList() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            
+            const list = db[currentCategory];
+            list.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openModal(index);
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="shop-name">${item.name}</span>
+                        <span class="tag">${item.tag}</span>
+                    </div>
+                    <p class="card-desc">${item.desc}</p>
+                    <span class="click-hint">메뉴 및 위치 보기 +</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openModal(index) {
+            const item = db[currentCategory][index];
+            const modalBody = document.getElementById('modal-body');
+            
+            let menuHtml = '';
+            item.menus.forEach(m => {
+                menuHtml += `
+                    <div class="menu-item">
+                        <span class="m-name">${m.n}</span>
+                        <span class="m-price">${m.p}</span>
+                    </div>
+                `;
+            });
+
+            const mapUrl = `https://m.map.naver.com/search2/search.naver?query=사상%20${encodeURIComponent(item.name)}&sm=hty&style=v5`;
+
+            modalBody.innerHTML = `
+                <div class="modal-title">${item.name}</div>
+                <span class="modal-tag">#${item.tag}</span>
+                
+                <div class="menu-section">
+                    <div class="menu-label">대표 메뉴</div>
+                    ${menuHtml}
+                </div>
+
+                <a href="${mapUrl}" target="_blank" class="map-btn">
+                    📍 네이버 지도 보기
+                </a>
+            `;
+
+            document.getElementById('modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(e) { if (e.target.id === 'modal') closeModalDirect(); }
+        function closeModalDirect() {
+            document.getElementById('modal').classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+</body>
+</html>
